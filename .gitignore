@@ -1,0 +1,22 @@
+# Power BI temporary files and cache
+*.tmp
+*.temp
+*.bak
+~$*
+*.pbix.cache/
+
+# OS specific files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+# IDE and Editor configs
+.vscode/
+.idea/
+*.swp
+*~
+
+# Script and log dumps
+*.log
