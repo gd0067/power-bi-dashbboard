@@ -1,0 +1,94 @@
+/* ==========================================================================
+   APEX RETAIL GLOBAL - DAX MEASURE LIBRARY
+   Folder: 03_assurance_and_audit.dax
+   Description: Revenue assurance, audit discrepancy, and financial leakage measures.
+   ========================================================================== */
+
+// 1. Total Unauthorized Discount Leakage ($)
+// Captures discount amounts granted beyond standard policy (>= 25%)
+Discount Leakage Amount = 
+CALCULATE ( 
+    SUM ( fact_sales_orders[DiscountAmount] ), 
+    fact_sales_orders[DiscountPct] >= 0.25 
+)
+
+// 2. Discount Leakage Ratio (% of Total Gross Revenue)
+Discount Leakage Ratio % = 
+DIVIDE ( 
+    [Discount Leakage Amount], 
+    [Total Gross Revenue], 
+    0 
+)
+
+// 3. Negative Margin Transaction Count
+Negative Margin Order Count = 
+CALCULATE ( 
+    COUNTROWS ( fact_sales_orders ), 
+    fact_sales_orders[GrossMargin] < 0 
+)
+
+// 4. Negative Margin Financial Loss ($)
+Negative Margin Loss = 
+CALCULATE ( 
+    SUMX ( 
+        FILTER ( fact_sales_orders, fact_sales_orders[GrossMargin] < 0 ), 
+        ABS ( fact_sales_orders[GrossMargin] ) 
+    ) 
+)
+
+// 5. Total Disputed Receivables ($)
+Disputed Receivables = 
+CALCULATE ( 
+    SUM ( fact_sales_orders[NetRevenue] ), 
+    fact_sales_orders[PaymentStatus] = "Disputed Settlement" 
+)
+
+// 6. SLA Shipping Breach Incident Count
+SLA Breach Incidents = 
+CALCULATE ( 
+    COUNTROWS ( fact_sales_orders ), 
+    fact_sales_orders[SlaBreachFlag] = "Y" 
+)
+
+// 7. SLA Breach Rate (%)
+SLA Breach Rate % = 
+DIVIDE ( 
+    [SLA Breach Incidents], 
+    [Total Line Items], 
+    0 
+)
+
+// 8. SLA Delivery Penalty Exposure ($)
+SLA Penalty Exposure = 
+CALCULATE ( 
+    SUMX ( 
+        FILTER ( fact_sales_orders, fact_sales_orders[SlaBreachFlag] = "Y" ), 
+        fact_sales_orders[ShippingCost] * 1.5 
+    ) 
+)
+
+// 9. Total Financial Exposure at Risk ($)
+Total Exposure at Risk = 
+[Discount Leakage Amount] + [Negative Margin Loss] + [Disputed Receivables] + [SLA Penalty Exposure]
+
+// 10. High-Risk Assurance Order Ratio (%)
+High-Risk Order Ratio % = 
+VAR _HighRiskOrders = 
+    CALCULATE ( 
+        DISTINCTCOUNT ( fact_sales_orders[OrderID] ), 
+        fact_sales_orders[AuditFlag] <> "None" 
+            || fact_sales_orders[GrossMargin] < 0 
+            || fact_sales_orders[PaymentStatus] = "Disputed Settlement" 
+    )
+RETURN
+    DIVIDE ( _HighRiskOrders, [Total Orders], 0 )
+
+// 11. Assurance Compliance Health Score (0 - 100 Index)
+// Benchmark: Deducts points based on leakage ratio, SLA breaches, and negative margins
+Assurance Compliance Health Score = 
+VAR _LeakagePenalty = [Discount Leakage Ratio %] * 150
+VAR _MarginPenalty = DIVIDE ( [Negative Margin Order Count], [Total Line Items], 0 ) * 200
+VAR _SlaPenalty = [SLA Breach Rate %] * 100
+VAR _RawScore = 100 - ( _LeakagePenalty + _MarginPenalty + _SlaPenalty )
+RETURN
+    MAX ( 0, MIN ( 100, ROUND ( _RawScore, 1 ) ) )

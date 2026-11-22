@@ -1,0 +1,55 @@
+/* ==========================================================================
+   APEX RETAIL GLOBAL - DAX MEASURE LIBRARY
+   Folder: 04_dynamic_formatting.dax
+   Description: Dynamic titles, executive alert cards, and hex color codes.
+   ========================================================================== */
+
+// 1. Dynamic Executive Header Title
+Dynamic Dashboard Title = 
+VAR _SelectedYear = SELECTEDVALUE ( dim_date[Year], "2023 - 2024" )
+VAR _SelectedRegion = SELECTEDVALUE ( dim_store[Region], "Global Operations" )
+RETURN
+    "Executive Performance & Assurance Summary | " & _SelectedRegion & " (" & _SelectedYear & ")"
+
+// 2. YoY Growth Color Hex Code (Green for positive, Red for negative)
+YoY Revenue Growth Color = 
+VAR _Growth = [YoY Revenue Growth %]
+RETURN
+    SWITCH ( 
+        TRUE (),
+        ISBLANK ( _Growth ), "#605E5C",   // Neutral Gray
+        _Growth >= 0.10, "#107C41",      // Strong Green
+        _Growth >= 0.00, "#2B88D8",      // Moderate Blue
+        "#D83B01"                        // Alert Red
+    )
+
+// 3. Assurance Health Status Color Hex Code
+Assurance Health Status Color = 
+VAR _Score = [Assurance Compliance Health Score]
+RETURN
+    SWITCH ( 
+        TRUE (),
+        _Score >= 90, "#107C41",         // Compliant / Green
+        _Score >= 75, "#FFB900",         // Warning / Amber
+        "#D83B01"                        // Critical Breach / Red
+    )
+
+// 4. Executive KPI Alert Status Callout
+Executive KPI Alert Card = 
+VAR _Health = [Assurance Compliance Health Score]
+VAR _Leakage = [Discount Leakage Amount]
+VAR _NegativeOrders = [Negative Margin Order Count]
+RETURN
+    IF ( 
+        _Health >= 85,
+        "STATUS NORMAL: Operations within governance bounds. Total leakage: " & FORMAT ( _Leakage, "$#,##0" ),
+        "ASSURANCE ALERT: " & _NegativeOrders & " negative-margin transactions and " & FORMAT ( _Leakage, "$#,##0" ) & " rogue discount leakage detected."
+    )
+
+// 5. Selected Slicer Dimension Summary Text
+Selected Filter Breadcrumb = 
+VAR _Region = SELECTEDVALUE ( dim_store[Region], "All Regions" )
+VAR _Category = SELECTEDVALUE ( dim_product[Category], "All Categories" )
+VAR _Segment = SELECTEDVALUE ( dim_customer[Segment], "All Segments" )
+RETURN
+    "Active Scope: " & _Region & " | " & _Category & " | " & _Segment

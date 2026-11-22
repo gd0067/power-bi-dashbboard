@@ -1,0 +1,93 @@
+/* ==========================================================================
+   APEX RETAIL GLOBAL - DAX MEASURE LIBRARY
+   Folder: 01_core_financial_kpis.dax
+   Description: Core commercial, profitability, and operational measures.
+   ========================================================================== */
+
+// 1. Total Gross Revenue
+Total Gross Revenue = 
+SUM ( fact_sales_orders[GrossRevenue] )
+
+// 2. Total Discount Amount
+Total Discount Amount = 
+SUM ( fact_sales_orders[DiscountAmount] )
+
+// 3. Total Net Revenue
+Total Net Revenue = 
+SUM ( fact_sales_orders[NetRevenue] )
+
+// 4. Total Cost of Goods Sold (COGS)
+Total Cost = 
+SUM ( fact_sales_orders[TotalCost] )
+
+// 5. Gross Margin ($)
+Gross Margin = 
+[Total Net Revenue] - [Total Cost]
+
+// 6. Gross Margin Percentage (%)
+Gross Margin % = 
+DIVIDE ( 
+    [Gross Margin], 
+    [Total Net Revenue], 
+    0 
+)
+
+// 7. Overall Discount Rate (%)
+Overall Discount Rate % = 
+DIVIDE ( 
+    [Total Discount Amount], 
+    [Total Gross Revenue], 
+    0 
+)
+
+// 8. Total Orders
+Total Orders = 
+DISTINCTCOUNT ( fact_sales_orders[OrderID] )
+
+// 9. Total Line Items
+Total Line Items = 
+COUNTROWS ( fact_sales_orders )
+
+// 10. Total Units Sold
+Total Units Sold = 
+SUM ( fact_sales_orders[Quantity] )
+
+// 11. Average Order Value (AOV)
+Average Order Value = 
+DIVIDE ( 
+    [Total Net Revenue], 
+    [Total Orders], 
+    0 
+)
+
+// 12. Average Selling Price per Unit (ASP)
+Average Selling Price = 
+DIVIDE ( 
+    [Total Net Revenue], 
+    [Total Units Sold], 
+    0 
+)
+
+// 13. Revenue Per Customer
+Revenue Per Customer = 
+DIVIDE ( 
+    [Total Net Revenue], 
+    DISTINCTCOUNT ( fact_sales_orders[CustomerID] ), 
+    0 
+)
+
+// 14. Target Revenue (from Fact Monthly Targets)
+Target Revenue = 
+SUM ( raw_targets_2023_2024[TargetRevenue] )
+
+// 15. Revenue Variance to Target ($)
+Revenue Variance to Target = 
+[Total Net Revenue] - [Target Revenue]
+
+// 16. Revenue Target Attainment (%)
+Revenue Target Attainment % = 
+DIVIDE ( 
+    [Total Net Revenue], 
+    [Target Revenue], 
+    0 
+)

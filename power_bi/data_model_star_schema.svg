@@ -1,0 +1,150 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 820" width="100%" height="100%" style="background-color: #0d1117; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <!-- Drop Shadows and Gradients -->
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+    <linearGradient id="factGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1f2937" />
+      <stop offset="100%" stop-color="#111827" />
+    </linearGradient>
+    <linearGradient id="dimGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8"/>
+    </marker>
+  </defs>
+
+  <!-- Title & Header -->
+  <text x="600" y="45" text-anchor="middle" fill="#f8fafc" font-size="24" font-weight="700" letter-spacing="0.5">Enterprise Star Schema Architecture | Apex Retail Analytics</text>
+  <text x="600" y="70" text-anchor="middle" fill="#94a3b8" font-size="13">Strict One-to-Many (1:*) Single-Direction Relationships | High Performance Tabular Model</text>
+
+  <!-- Connector Lines (Dimensions to Central Fact) -->
+  <!-- DimDate -> FactSalesOrders -->
+  <path d="M 290 230 L 460 380" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4,4" fill="none" marker-end="url(#arrow)"/>
+  <text x="360" y="295" fill="#38bdf8" font-size="11" font-weight="600">1 : * (OrderDateKey)</text>
+
+  <!-- DimCustomer -> FactSalesOrders -->
+  <path d="M 290 580 L 460 490" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4,4" fill="none" marker-end="url(#arrow)"/>
+  <text x="360" y="550" fill="#38bdf8" font-size="11" font-weight="600">1 : * (CustomerID)</text>
+
+  <!-- DimProduct -> FactSalesOrders -->
+  <path d="M 910 230 L 740 380" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4,4" fill="none" marker-end="url(#arrow)"/>
+  <text x="810" y="295" fill="#38bdf8" font-size="11" font-weight="600">1 : * (ProductID)</text>
+
+  <!-- DimStore -> FactSalesOrders -->
+  <path d="M 910 580 L 740 490" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4,4" fill="none" marker-end="url(#arrow)"/>
+  <text x="810" y="550" fill="#38bdf8" font-size="11" font-weight="600">1 : * (StoreID)</text>
+
+  <!-- FactSalesOrders -> FactAssuranceAuditLogs -->
+  <path d="M 600 640 L 600 700" stroke="#ef4444" stroke-width="2" stroke-dasharray="2,2" fill="none" marker-end="url(#arrow)"/>
+  <text x="610" y="675" fill="#f87171" font-size="11" font-weight="600">1 : 0..1 (Audit Link)</text>
+
+
+  <!-- ==================== DIM_DATE (Top-Left) ==================== -->
+  <g transform="translate(60, 110)" filter="url(#shadow)">
+    <rect width="230" height="260" rx="8" fill="url(#dimGrad)" stroke="#3b82f6" stroke-width="2"/>
+    <rect width="230" height="36" rx="8" fill="#1d4ed8"/>
+    <text x="115" y="23" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="700">dim_date</text>
+    <text x="15" y="60" fill="#fbbf24" font-size="12" font-weight="bold">PK  DateKey (INT)</text>
+    <text x="15" y="82" fill="#e2e8f0" font-size="11">      Date (DATE)</text>
+    <text x="15" y="104" fill="#e2e8f0" font-size="11">      Year (INT)</text>
+    <text x="15" y="126" fill="#e2e8f0" font-size="11">      Quarter (VARCHAR)</text>
+    <text x="15" y="148" fill="#e2e8f0" font-size="11">      YearQuarter (VARCHAR)</text>
+    <text x="15" y="170" fill="#e2e8f0" font-size="11">      MonthNum (INT)</text>
+    <text x="15" y="192" fill="#e2e8f0" font-size="11">      MonthName (VARCHAR)</text>
+    <text x="15" y="214" fill="#e2e8f0" font-size="11">      YearMonth (VARCHAR)</text>
+    <text x="15" y="236" fill="#e2e8f0" font-size="11">      FiscalYear (VARCHAR)</text>
+    <text x="15" y="254" fill="#94a3b8" font-size="10">Role: Primary Time Dimension</text>
+  </g>
+
+  <!-- ==================== DIM_CUSTOMER (Bottom-Left) ==================== -->
+  <g transform="translate(60, 450)" filter="url(#shadow)">
+    <rect width="230" height="250" rx="8" fill="url(#dimGrad)" stroke="#3b82f6" stroke-width="2"/>
+    <rect width="230" height="36" rx="8" fill="#1d4ed8"/>
+    <text x="115" y="23" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="700">dim_customer</text>
+    <text x="15" y="60" fill="#fbbf24" font-size="12" font-weight="bold">PK  CustomerID (VARCHAR)</text>
+    <text x="15" y="82" fill="#e2e8f0" font-size="11">      CustomerName (NVARCHAR)</text>
+    <text x="15" y="104" fill="#e2e8f0" font-size="11">      Segment (VARCHAR)</text>
+    <text x="15" y="126" fill="#e2e8f0" font-size="11">      Country (NVARCHAR)</text>
+    <text x="15" y="148" fill="#e2e8f0" font-size="11">      Region (NVARCHAR)</text>
+    <text x="15" y="170" fill="#e2e8f0" font-size="11">      City (NVARCHAR)</text>
+    <text x="15" y="192" fill="#e2e8f0" font-size="11">      CreditRating (VARCHAR)</text>
+    <text x="15" y="214" fill="#e2e8f0" font-size="11">      AccountStatus (VARCHAR)</text>
+    <text x="15" y="236" fill="#94a3b8" font-size="10">SCD Type 1 / 2 Compliant</text>
+  </g>
+
+  <!-- ==================== FACT_SALES_ORDERS (Center) ==================== -->
+  <g transform="translate(460, 130)" filter="url(#shadow)">
+    <rect width="280" height="510" rx="8" fill="url(#factGrad)" stroke="#10b981" stroke-width="2.5"/>
+    <rect width="280" height="38" rx="8" fill="#047857"/>
+    <text x="140" y="24" text-anchor="middle" fill="#ffffff" font-size="14" font-weight="700">fact_sales_orders</text>
+    <text x="15" y="62" fill="#fbbf24" font-size="12" font-weight="bold">PK  OrderItemID (VARCHAR)</text>
+    <text x="15" y="84" fill="#6ee7b7" font-size="11">FK  DateKey (INT)</text>
+    <text x="15" y="104" fill="#6ee7b7" font-size="11">FK  CustomerID (VARCHAR)</text>
+    <text x="15" y="124" fill="#6ee7b7" font-size="11">FK  ProductID (VARCHAR)</text>
+    <text x="15" y="144" fill="#6ee7b7" font-size="11">FK  StoreID (VARCHAR)</text>
+    <text x="15" y="168" fill="#e2e8f0" font-size="11">DD  OrderID (VARCHAR)</text>
+    <text x="15" y="188" fill="#e2e8f0" font-size="11">      SalesRep (NVARCHAR)</text>
+    <text x="15" y="208" fill="#e2e8f0" font-size="11">      ShippingMethod (VARCHAR)</text>
+    <text x="15" y="228" fill="#e2e8f0" font-size="11">      PaymentStatus (VARCHAR)</text>
+    <text x="15" y="248" fill="#e2e8f0" font-size="11">      SlaBreachFlag (CHAR)</text>
+    <text x="15" y="272" fill="#38bdf8" font-size="11">M   Quantity (INT)</text>
+    <text x="15" y="292" fill="#38bdf8" font-size="11">M   UnitCost (DECIMAL)</text>
+    <text x="15" y="312" fill="#38bdf8" font-size="11">M   UnitPrice (DECIMAL)</text>
+    <text x="15" y="332" fill="#38bdf8" font-size="11">M   GrossRevenue (DECIMAL)</text>
+    <text x="15" y="352" fill="#38bdf8" font-size="11">M   DiscountPct (DECIMAL)</text>
+    <text x="15" y="372" fill="#38bdf8" font-size="11">M   DiscountAmount (DECIMAL)</text>
+    <text x="15" y="392" fill="#38bdf8" font-size="11">M   NetRevenue (DECIMAL)</text>
+    <text x="15" y="412" fill="#38bdf8" font-size="11">M   TotalCost (DECIMAL)</text>
+    <text x="15" y="432" fill="#38bdf8" font-size="11">M   GrossMargin (DECIMAL)</text>
+    <text x="15" y="452" fill="#38bdf8" font-size="11">M   TaxAmount (DECIMAL)</text>
+    <text x="15" y="472" fill="#38bdf8" font-size="11">M   ShippingCost (DECIMAL)</text>
+    <text x="15" y="494" fill="#f87171" font-size="11" font-weight="bold">!    AuditFlag (VARCHAR)</text>
+  </g>
+
+  <!-- ==================== DIM_PRODUCT (Top-Right) ==================== -->
+  <g transform="translate(910, 110)" filter="url(#shadow)">
+    <rect width="230" height="260" rx="8" fill="url(#dimGrad)" stroke="#3b82f6" stroke-width="2"/>
+    <rect width="230" height="36" rx="8" fill="#1d4ed8"/>
+    <text x="115" y="23" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="700">dim_product</text>
+    <text x="15" y="60" fill="#fbbf24" font-size="12" font-weight="bold">PK  ProductID (VARCHAR)</text>
+    <text x="15" y="82" fill="#e2e8f0" font-size="11">      ProductName (NVARCHAR)</text>
+    <text x="15" y="104" fill="#e2e8f0" font-size="11">      Category (VARCHAR)</text>
+    <text x="15" y="126" fill="#e2e8f0" font-size="11">      SubCategory (VARCHAR)</text>
+    <text x="15" y="148" fill="#e2e8f0" font-size="11">      UnitCost (DECIMAL)</text>
+    <text x="15" y="170" fill="#e2e8f0" font-size="11">      StandardPrice (DECIMAL)</text>
+    <text x="15" y="192" fill="#e2e8f0" font-size="11">      TargetMarginPct (DECIMAL)</text>
+    <text x="15" y="214" fill="#e2e8f0" font-size="11">      MinOrderQty (INT)</text>
+    <text x="15" y="236" fill="#e2e8f0" font-size="11">      IsDiscontinued (CHAR)</text>
+    <text x="15" y="254" fill="#94a3b8" font-size="10">Hierarchical Merchandise Model</text>
+  </g>
+
+  <!-- ==================== DIM_STORE (Bottom-Right) ==================== -->
+  <g transform="translate(910, 450)" filter="url(#shadow)">
+    <rect width="230" height="250" rx="8" fill="url(#dimGrad)" stroke="#3b82f6" stroke-width="2"/>
+    <rect width="230" height="36" rx="8" fill="#1d4ed8"/>
+    <text x="115" y="23" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="700">dim_store</text>
+    <text x="15" y="60" fill="#fbbf24" font-size="12" font-weight="bold">PK  StoreID (VARCHAR)</text>
+    <text x="15" y="82" fill="#e2e8f0" font-size="11">      StoreName (NVARCHAR)</text>
+    <text x="15" y="104" fill="#e2e8f0" font-size="11">      Channel (VARCHAR)</text>
+    <text x="15" y="126" fill="#e2e8f0" font-size="11">      Region (VARCHAR)</text>
+    <text x="15" y="148" fill="#e2e8f0" font-size="11">      TerritoryCode (VARCHAR)</text>
+    <text x="15" y="170" fill="#e2e8f0" font-size="11">      RegionalManager (NVARCHAR)</text>
+    <text x="15" y="192" fill="#e2e8f0" font-size="11">      CapacityTier (VARCHAR)</text>
+    <text x="15" y="214" fill="#e2e8f0" font-size="11">      EstablishedYear (INT)</text>
+    <text x="15" y="236" fill="#94a3b8" font-size="10">Territory Distribution Hubs</text>
+  </g>
+
+  <!-- ==================== FACT_ASSURANCE_AUDIT_LOGS (Bottom Center) ==================== -->
+  <g transform="translate(380, 700)" filter="url(#shadow)">
+    <rect width="440" height="100" rx="8" fill="#2d1515" stroke="#ef4444" stroke-width="1.5"/>
+    <rect width="440" height="28" rx="8" fill="#991b1b"/>
+    <text x="220" y="19" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="700">fact_assurance_audit_logs (Anomaly Audit Trail)</text>
+    <text x="20" y="48" fill="#fca5a5" font-size="10">PK AuditLogID | OrderID | OrderItemID | AuditCategory | AuditSeverity</text>
+    <text x="20" y="66" fill="#fca5a5" font-size="10">FinancialExposure ($) | ResolutionStatus | Investigator | LoggedAt</text>
+    <text x="20" y="84" fill="#cbd5e1" font-size="10">Detects: Negative Margin Overrides, Rogue Discount Leakage, SLA Breaches</text>
+  </g>
+</svg>

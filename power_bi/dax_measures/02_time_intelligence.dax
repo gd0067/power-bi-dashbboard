@@ -1,0 +1,108 @@
+/* ==========================================================================
+   APEX RETAIL GLOBAL - DAX MEASURE LIBRARY
+   Folder: 02_time_intelligence.dax
+   Description: Time-intelligence calculations, YoY trends, and rolling metrics.
+   Pre-requisite: dim_date marked as official Date Table.
+   ========================================================================== */
+
+// 1. Year-to-Date (YTD) Revenue
+Revenue YTD = 
+TOTALYTD ( 
+    [Total Net Revenue], 
+    dim_date[Date] 
+)
+
+// 2. Quarter-to-Date (QTD) Revenue
+Revenue QTD = 
+TOTALQTD ( 
+    [Total Net Revenue], 
+    dim_date[Date] 
+)
+
+// 3. Month-to-Date (MTD) Revenue
+Revenue MTD = 
+TOTALMTD ( 
+    [Total Net Revenue], 
+    dim_date[Date] 
+)
+
+// 4. Same Period Last Year (SPLY) Revenue
+Revenue SPLY = 
+CALCULATE ( 
+    [Total Net Revenue], 
+    SAMEPERIODLASTYEAR ( dim_date[Date] ) 
+)
+
+// 5. YoY Revenue Growth ($)
+YoY Revenue Growth $ = 
+VAR _Current = [Total Net Revenue]
+VAR _Prior = [Revenue SPLY]
+RETURN
+    IF ( 
+        NOT ISBLANK ( _Prior ), 
+        _Current - _Prior, 
+        BLANK () 
+    )
+
+// 6. YoY Revenue Growth (%)
+YoY Revenue Growth % = 
+DIVIDE ( 
+    [YoY Revenue Growth $], 
+    [Revenue SPLY], 
+    BLANK () 
+)
+
+// 7. Same Period Last Year (SPLY) Gross Margin
+Gross Margin SPLY = 
+CALCULATE ( 
+    [Gross Margin], 
+    SAMEPERIODLASTYEAR ( dim_date[Date] ) 
+)
+
+// 8. YoY Gross Margin Growth (%)
+YoY Gross Margin Growth % = 
+VAR _Current = [Gross Margin]
+VAR _Prior = [Gross Margin SPLY]
+RETURN
+    DIVIDE ( 
+        _Current - _Prior, 
+        _Prior, 
+        BLANK () 
+    )
+
+// 9. 3-Month Rolling Average Revenue
+3M Rolling Avg Revenue = 
+AVERAGEX ( 
+    DATESINPERIOD ( 
+        dim_date[Date], 
+        LASTDATE ( dim_date[Date] ), 
+        -3, 
+        MONTH 
+    ), 
+    [Total Net Revenue] 
+)
+
+// 10. Cumulative Sales Total (All Time Running Total)
+Cumulative Sales Total = 
+CALCULATE ( 
+    [Total Net Revenue], 
+    FILTER ( 
+        ALLSELECTED ( dim_date[Date] ), 
+        dim_date[Date] <= MAX ( dim_date[Date] ) 
+    ) 
+)
+
+// 11. Prior Month Revenue (MOM)
+Revenue Prior Month = 
+CALCULATE ( 
+    [Total Net Revenue], 
+    DATEADD ( dim_date[Date], -1, MONTH ) 
+)
+
+// 12. Month-over-Month (MoM) Growth (%)
+MoM Revenue Growth % = 
+DIVIDE ( 
+    [Total Net Revenue] - [Revenue Prior Month], 
+    [Revenue Prior Month], 
+    BLANK () 
+)
