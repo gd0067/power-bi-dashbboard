@@ -12,6 +12,7 @@ This repository contains an end-to-end enterprise analytics solution designed to
 - **ETL & Data Modeling:** Cleaned and staged 9,400+ line-item transactions into a star schema with strict `1:*` single-direction relationships.
 - **Advanced DAX Library:** Implemented Time Intelligence (YoY growth, YTD, 3-month rolling averages, cumulative totals) and custom financial audit KPIs.
 - **Assurance & Governance Engine:** Automated detection of unauthorized discount leakage, negative gross margin transactions, and logistics SLA breaches.
+- **Interactive Web Dashboard (`index.html`):** A standalone, zero-installation interactive HTML5/JavaScript dashboard demo that runs directly in any modern web browser (Edge, Chrome, Safari, Firefox). Anyone can view, filter, slice, and inspect drill-down transactions instantly without installing Power BI Desktop.
 - **Cross-Tool Financial Reconciliation:** Built a 3-way reconciliation model across ERP extracts, SQL warehouse facts, and Power BI models in Excel with $0.00 unexplained variance.
 
 ---
