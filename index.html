@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apex Retail Global | Business Analytics & Revenue Assurance Dashboard</title>
+  <!-- Chart.js and Tailwind via CDN for immediate zero-install browser rendering -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- Top Global Header -->
+  <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="h-9 w-9 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-white shadow-md">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+        </div>
+        <div>
+          <h1 class="text-base sm:text-lg font-bold leading-tight">Apex Retail Global | Analytics &amp; Revenue Assurance</h1>
+          <p class="text-xs text-slate-400">Interactive Executive Portfolio Demo &bull; Star Schema Data Model</p>
+        </div>
+      </div>
+
+      <!-- Quick Global Slicers -->
+      <div class="flex items-center gap-2.5 text-xs">
+        <span class="text-slate-400 font-medium hidden md:inline">Global Slicers:</span>
+        <select id="filterYear" onchange="applyFilters()" class="bg-slate-800 border border-slate-700 text-white rounded px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+          <option value="ALL">All Years (2023 - 2024)</option>
+          <option value="2024">FY 2024 (Current)</option>
+          <option value="2023">FY 2023 (Prior)</option>
+        </select>
+        <select id="filterRegion" onchange="applyFilters()" class="bg-slate-800 border border-slate-700 text-white rounded px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+          <option value="ALL">All Regions</option>
+          <option value="North America">North America</option>
+          <option value="Europe">Europe</option>
+          <option value="Asia-Pacific">Asia-Pacific</option>
+        </select>
+        <button onclick="resetFilters()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-2.5 py-1.5 rounded transition">Reset</button>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs (Matching Power BI Pages) -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-800/80 flex space-x-1 sm:space-x-4 overflow-x-auto text-xs sm:text-sm font-medium">
+      <button onclick="switchTab('tab-exec')" id="btn-tab-exec" class="py-2.5 px-3 border-b-2 border-blue-500 text-blue-400 flex items-center gap-1.5 whitespace-nowrap">
+        <span>Page 1: Executive Overview</span>
+      </button>
+      <button onclick="switchTab('tab-assurance')" id="btn-tab-assurance" class="py-2.5 px-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-1.5 whitespace-nowrap">
+        <span>Page 2: Revenue Assurance &amp; Risk</span>
+      </button>
+      <button onclick="switchTab('tab-customer')" id="btn-tab-customer" class="py-2.5 px-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-1.5 whitespace-nowrap">
+        <span>Page 3: Customer &amp; Territory Intelligence</span>
+      </button>
+      <button onclick="switchTab('tab-drill')" id="btn-tab-drill" class="py-2.5 px-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-1.5 whitespace-nowrap">
+        <span>Page 4: Transactional Drill-Through</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+
+    <!-- Active Filter Scope Breadcrumb -->
+    <div class="mb-4 flex flex-wrap items-center justify-between text-xs text-slate-500 bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm">
+      <div class="flex items-center gap-2">
+        <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+        <span id="activeFilterLabel">Active Scope: All Regions | All Years | All Merchandise Categories</span>
+      </div>
+      <div class="text-slate-400">Power BI Tabular Simulation Engine &bull; Zero Installation Required</div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- TAB 1: EXECUTIVE PERFORMANCE & FINANCIAL OVERVIEW -->
+    <!-- ================================================================= -->
+    <section id="tab-exec" class="space-y-6">
+      
+      <!-- Top 5 Core KPI Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Net Revenue</p>
+          <h2 id="kpi-net-revenue" class="text-2xl font-bold text-slate-900 mt-1">$18,452,190</h2>
+          <div class="mt-2 flex items-center gap-1 text-xs text-emerald-600 font-semibold">
+            <span>&uarr; +18.4% YoY</span>
+            <span class="text-slate-400 font-normal">vs prior year</span>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Gross Profit Margin</p>
+          <h2 id="kpi-gross-margin" class="text-2xl font-bold text-slate-900 mt-1">$7,842,540</h2>
+          <div class="mt-2 flex items-center gap-1 text-xs text-emerald-600 font-semibold">
+            <span id="kpi-margin-pct">42.5% Margin Rate</span>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Target Attainment</p>
+          <h2 id="kpi-target-pct" class="text-2xl font-bold text-slate-900 mt-1">104.2%</h2>
+          <div class="mt-2 flex items-center gap-1 text-xs text-blue-600 font-semibold">
+            <span>+$742,000 above target</span>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Average Order Value (AOV)</p>
+          <h2 id="kpi-aov" class="text-2xl font-bold text-slate-900 mt-1">$4,855</h2>
+          <div class="mt-2 flex items-center gap-1 text-xs text-slate-500 font-medium">
+            <span>3,800 Total Orders</span>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm border-l-4 border-l-emerald-500">
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Assurance Health Score</p>
+          <h2 id="kpi-health-score" class="text-2xl font-bold text-emerald-600 mt-1">92.4 / 100</h2>
+          <div class="mt-2 flex items-center gap-1 text-xs text-emerald-700 font-medium">
+            <span>Status: Audit Compliant</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Charts Row 1: Revenue Trends & Category Breakdown -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left: Monthly Revenue Trend + 3M Moving Average -->
+        <div class="lg:col-span-2 bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="font-bold text-slate-900 text-sm sm:text-base">Monthly Revenue Velocity vs. 3M Rolling Average</h3>
+              <p class="text-xs text-slate-500">Evaluates sales trajectory and seasonal momentum</p>
+            </div>
+            <span class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded font-medium">Time Intelligence</span>
+          </div>
+          <div class="relative h-72">
+            <canvas id="chartRevenueTrend"></canvas>
+          </div>
+        </div>
+
+        <!-- Right: Revenue by Product Hierarchy -->
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="font-bold text-slate-900 text-sm sm:text-base">Revenue by Category</h3>
+              <p class="text-xs text-slate-500">Portfolio product mix contribution</p>
+            </div>
+          </div>
+          <div class="relative h-72 flex items-center justify-center">
+            <canvas id="chartCategoryShare"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Charts Row 2: Regional Performance & Top Sales Reps -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Regional Breakdown -->
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <h3 class="font-bold text-slate-900 text-sm sm:text-base mb-1">Regional Commercial Contribution</h3>
+          <p class="text-xs text-slate-500 mb-4">Distribution across North America, Europe, and Asia-Pacific</p>
+          <div class="relative h-64">
+            <canvas id="chartRegionalBar"></canvas>
+          </div>
+        </div>
+
+        <!-- Top Sales Reps Audit -->
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <h3 class="font-bold text-slate-900 text-sm sm:text-base mb-1">Commercial Sales Representative Matrix</h3>
+          <p class="text-xs text-slate-500 mb-4">Revenue generation vs. realized gross margin efficiency</p>
+          <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 text-slate-600 font-semibold border-b">
+                <tr>
+                  <th class="py-2.5 px-3">Sales Representative</th>
+                  <th class="py-2.5 px-3 text-right">Orders</th>
+                  <th class="py-2.5 px-3 text-right">Net Revenue</th>
+                  <th class="py-2.5 px-3 text-right">Gross Margin %</th>
+                  <th class="py-2.5 px-3 text-center">Audit Tier</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100" id="salesRepTableBody">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- TAB 2: REVENUE ASSURANCE & AUDIT GOVERNANCE -->
+    <!-- ================================================================= -->
+    <section id="tab-assurance" class="space-y-6 hidden">
+      
+      <!-- Critical Anomaly Notification Banner -->
+      <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl flex items-start gap-3">
+        <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+        <div>
+          <h4 class="text-sm font-bold text-amber-800">Automated Revenue Assurance Detection Engine Active</h4>
+          <p class="text-xs text-amber-700 mt-0.5">Identified rogue discount leakage ($486,210) and 42 negative gross margin transactions requiring executive controllership review.</p>
+        </div>
+      </div>
+
+      <!-- Anomaly KPI Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <div class="bg-white p-4 rounded-xl border border-red-200 shadow-sm bg-red-50/20">
+          <p class="text-xs font-semibold text-red-600 uppercase tracking-wider">Discount Leakage (&ge;25%)</p>
+          <h2 class="text-2xl font-bold text-red-700 mt-1">$486,210</h2>
+          <p class="text-xs text-slate-500 mt-1">2.6% of gross commercial revenue</p>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-orange-200 shadow-sm bg-orange-50/20">
+          <p class="text-xs font-semibold text-orange-600 uppercase tracking-wider">Negative Margin Orders</p>
+          <h2 class="text-2xl font-bold text-orange-700 mt-1">42 Orders</h2>
+          <p class="text-xs text-slate-500 mt-1">Absorbed Financial Loss: $38,420</p>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-amber-200 shadow-sm bg-amber-50/20">
+          <p class="text-xs font-semibold text-amber-600 uppercase tracking-wider">Disputed Receivables</p>
+          <h2 class="text-2xl font-bold text-amber-700 mt-1">$342,180</h2>
+          <p class="text-xs text-slate-500 mt-1">Concentrated in BBB / BB client accounts</p>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-blue-200 shadow-sm bg-blue-50/20">
+          <p class="text-xs font-semibold text-blue-600 uppercase tracking-wider">SLA Logistics Breaches</p>
+          <h2 class="text-2xl font-bold text-blue-700 mt-1">412 Incidents</h2>
+          <p class="text-xs text-slate-500 mt-1">Carrier Penalty Claim Exposure: $16,840</p>
+        </div>
+
+      </div>
+
+      <!-- Audit Visuals: Leakage Waterfall + Risk Quadrant -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Revenue-to-Margin Waterfall Simulation -->
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <h3 class="font-bold text-slate-900 text-sm sm:text-base mb-1">Gross-to-Net Profit Bridge (Waterfall)</h3>
+          <p class="text-xs text-slate-500 mb-4">Erosion analysis from Gross List Sales to Realized Margin</p>
+          <div class="relative h-64">
+            <canvas id="chartWaterfall"></canvas>
+          </div>
+        </div>
+
+        <!-- Margin vs Discount Scatter / Risk Distribution -->
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <h3 class="font-bold text-slate-900 text-sm sm:text-base mb-1">Pricing Governance &amp; Discount Exposure</h3>
+          <p class="text-xs text-slate-500 mb-4">Volume distribution across discount tiers</p>
+          <div class="relative h-64">
+            <canvas id="chartDiscountBuckets"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Audit Exception Table -->
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="font-bold text-slate-900 text-sm sm:text-base">Revenue Assurance Audit Exception Register</h3>
+            <p class="text-xs text-slate-500">Live feed from `edw.FactAssuranceAuditLogs`</p>
+          </div>
+          <span class="text-xs font-medium bg-red-100 text-red-700 px-2.5 py-1 rounded-full">Requires Executive Sign-Off</span>
+        </div>
+        <div class="overflow-x-auto custom-scrollbar">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-50 text-slate-600 font-semibold border-b">
+              <tr>
+                <th class="py-2.5 px-3">Audit ID</th>
+                <th class="py-2.5 px-3">Order ID</th>
+                <th class="py-2.5 px-3">Anomaly Classification</th>
+                <th class="py-2.5 px-3">Severity</th>
+                <th class="py-2.5 px-3 text-right">Order Revenue</th>
+                <th class="py-2.5 px-3 text-right">Exposure / Loss</th>
+                <th class="py-2.5 px-3">Audit Finding</th>
+                <th class="py-2.5 px-3 text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100" id="auditTableBody">
+              <!-- Injected via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- TAB 3: CUSTOMER & TERRITORY INTELLIGENCE -->
+    <!-- ================================================================= -->
+    <section id="tab-customer" class="space-y-6 hidden">
+      
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Segment Breakdown -->
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <h3 class="font-bold text-slate-900 text-sm sm:text-base mb-1">Revenue by Client Segment</h3>
+          <p class="text-xs text-slate-500 mb-4">Enterprise, Mid-Market, SMB, and Consumer</p>
+          <div class="relative h-64 flex items-center justify-center">
+            <canvas id="chartSegmentDonut"></canvas>
+          </div>
+        </div>
+
+        <!-- Credit Rating Risk Matrix -->
+        <div class="lg:col-span-2 bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <h3 class="font-bold text-slate-900 text-sm sm:text-base mb-1">Credit Rating vs Settlement Exposure</h3>
+          <p class="text-xs text-slate-500 mb-4">Disputed receivables concentrated in subprime credit tiers</p>
+          <div class="relative h-64">
+            <canvas id="chartCreditRisk"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Territory Fulfillment Performance -->
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <h3 class="font-bold text-slate-900 text-sm sm:text-base mb-1">Regional Logistics Hub Fulfillment Performance</h3>
+        <p class="text-xs text-slate-500 mb-4">Comparison of volume throughput, average shipping days, and SLA breach rate</p>
+        <div class="overflow-x-auto custom-scrollbar">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-50 text-slate-600 font-semibold border-b">
+              <tr>
+                <th class="py-2.5 px-3">Hub Name</th>
+                <th class="py-2.5 px-3">Territory</th>
+                <th class="py-2.5 px-3">Channel</th>
+                <th class="py-2.5 px-3">Regional Manager</th>
+                <th class="py-2.5 px-3 text-right">Total Net Sales</th>
+                <th class="py-2.5 px-3 text-center">SLA Breach %</th>
+                <th class="py-2.5 px-3 text-center">Performance Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100" id="territoryTableBody">
+              <!-- Injected via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- TAB 4: TRANSACTIONAL DRILL-THROUGH DEEP DIVE -->
+    <!-- ================================================================= -->
+    <section id="tab-drill" class="space-y-6 hidden">
+      
+      <!-- Drill Header & Search -->
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h3 class="font-bold text-slate-900 text-sm sm:text-base">Transaction Line-Item Drill-Through</h3>
+          <p class="text-xs text-slate-500">Inspect granular invoice lines, base cost vs realized price, and audit tags</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <input type="text" id="drillSearch" onkeyup="filterDrillTable()" placeholder="Search Order ID, Customer, SKU..." class="border border-slate-300 rounded-lg px-3 py-1.5 text-xs w-64 focus:ring-1 focus:ring-blue-500 focus:outline-none">
+        </div>
+      </div>
+
+      <!-- Drill Table -->
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <div class="overflow-x-auto custom-scrollbar">
+          <table class="w-full text-left text-xs" id="drillTable">
+            <thead class="bg-slate-50 text-slate-600 font-semibold border-b">
+              <tr>
+                <th class="py-2.5 px-3">Order ID</th>
+                <th class="py-2.5 px-3">Date</th>
+                <th class="py-2.5 px-3">Customer</th>
+                <th class="py-2.5 px-3">Product Description</th>
+                <th class="py-2.5 px-3 text-right">Qty</th>
+                <th class="py-2.5 px-3 text-right">Unit Price</th>
+                <th class="py-2.5 px-3 text-right">Discount</th>
+                <th class="py-2.5 px-3 text-right">Net Revenue</th>
+                <th class="py-2.5 px-3 text-right">Gross Margin</th>
+                <th class="py-2.5 px-3 text-center">Payment</th>
+                <th class="py-2.5 px-3 text-center">Audit Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100" id="drillTableBody">
+              <!-- Injected via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 py-4 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between text-xs text-slate-500 gap-2">
+      <div>Enterprise Assurance Architecture &bull; Microsoft Power BI, SQL Server, Excel</div>
+      <div class="flex gap-4">
+        <a href="https://github.com" class="hover:text-blue-600 font-medium">GitHub Repository</a>
+        <span>&bull;</span>
+        <a href="data/data_dictionary.md" class="hover:text-blue-600">Data Dictionary</a>
+        <span>&bull;</span>
+        <a href="power_bi/pbix_guide.md" class="hover:text-blue-600">PBIX Build Manual</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Modal for Order Inspection -->
+  <div id="orderModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-xl w-full p-6 space-y-4">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h3 class="text-base font-bold text-slate-900" id="modalOrderId">Order Inspection</h3>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600">&times;</button>
+      </div>
+      <div id="modalContent" class="text-xs space-y-3 text-slate-600">
+        <!-- Injected dynamically -->
+      </div>
+      <div class="flex justify-end pt-2">
+        <button onclick="closeModal()" class="px-4 py-1.5 bg-slate-800 text-white rounded text-xs font-medium hover:bg-slate-700">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Logic & Chart Initialization -->
+  <script>
+    // Tab switching
+    function switchTab(tabId) {
+      const tabs = ['tab-exec', 'tab-assurance', 'tab-customer', 'tab-drill'];
+      tabs.forEach(t => {
+        document.getElementById(t).classList.add('hidden');
+        document.getElementById('btn-' + t).classList.remove('border-blue-500', 'text-blue-400');
+        document.getElementById('btn-' + t).classList.add('border-transparent', 'text-slate-400');
+      });
+      document.getElementById(tabId).classList.remove('hidden');
+      document.getElementById('btn-' + tabId).classList.remove('border-transparent', 'text-slate-400');
+      document.getElementById('btn-' + tabId).classList.add('border-blue-500', 'text-blue-400');
+    }
+
+    // Chart references
+    let chartRevTrend, chartCategory, chartRegional, chartWaterfall, chartDiscount, chartSegment, chartCredit;
+
+    // Sample dataset arrays reflecting actual project data
+    const salesRepsData = [
+      { name: "Harvey Specter", orders: 540, revenue: 2640500, marginPct: 44.2, tier: "Compliant" },
+      { name: "Jessica Pearson", orders: 492, revenue: 2410200, marginPct: 43.8, tier: "Compliant" },
+      { name: "Mike Ross", orders: 485, revenue: 2320100, marginPct: 42.1, tier: "Compliant" },
+      { name: "Donna Paulsen", orders: 460, revenue: 2215000, marginPct: 43.0, tier: "Compliant" },
+      { name: "Robert Zane", orders: 445, revenue: 2180400, marginPct: 41.5, tier: "Compliant" },
+      { name: "Louis Litt", orders: 432, revenue: 2095000, marginPct: 38.2, tier: "Watchlist - High Discount" },
+      { name: "Rachel Green", orders: 420, revenue: 2045000, marginPct: 42.6, tier: "Compliant" },
+      { name: "Katrina Bennett", orders: 380, revenue: 1845990, marginPct: 41.9, tier: "Compliant" }
+    ];
+
+    const auditLogsData = [
+      { id: "AUD-80004", order: "ORD-10023", cat: "Negative Margin Glitch", sev: "Critical", rev: 1450, exp: 182.40, desc: "Unit selling price ($1,276) fell below base cost ($1,450)", action: "Margin Restoration" },
+      { id: "AUD-80012", order: "ORD-10045", cat: "Rogue Discount Leakage", sev: "High", rev: 4820, exp: 1446.00, desc: "Rep granted 30% discount exceeding 15% authority limit", action: "Clawback Review" },
+      { id: "AUD-80029", order: "ORD-10091", cat: "SLA Shipping Breach", sev: "Medium", rev: 8900, exp: 240.00, desc: "Express Air delivery delayed by 72h past SLA window", action: "Carrier Credit Claim" },
+      { id: "AUD-80041", order: "ORD-10115", cat: "Disputed Receivables", sev: "High", rev: 12400, exp: 12400.00, desc: "Open settlement dispute on BBB rated corporate client", action: "Legal Notice Protocol" },
+      { id: "AUD-80058", order: "ORD-10168", cat: "Negative Margin Glitch", sev: "Critical", rev: 2150, exp: 310.20, desc: "Commercial promotion override sold beneath warehouse standard cost", action: "Floor Constraint Lock" },
+      { id: "AUD-80072", order: "ORD-10210", cat: "Rogue Discount Leakage", sev: "High", rev: 6720, exp: 2016.00, desc: "Unauthorized 32% discount applied on high-density blade servers", action: "Director Sign-off" }
+    ];
+
+    const territoryData = [
+      { hub: "New York Metro Regional Hub", terr: "US-Northeast", channel: "Direct Enterprise", mgr: "Victoria Sterling", sales: 3240500, sla: 3.2, status: "Normal" },
+      { hub: "Chicago Midwest Logistics Hub", terr: "US-Midwest", channel: "Direct Enterprise", mgr: "Arthur Pendelton", sales: 2450000, sla: 4.1, status: "Normal" },
+      { hub: "Frankfurt Central Hub", terr: "EU-Central", channel: "Direct Enterprise", mgr: "Klaus Hoffman", sales: 2180000, sla: 2.8, status: "Prime" },
+      { hub: "London Thames Gateway", terr: "UK-South", channel: "Direct Enterprise", mgr: "Alistair Finch", sales: 1940000, sla: 3.5, status: "Normal" },
+      { hub: "Singapore Straits Gateway", terr: "APAC-SE", channel: "Direct Enterprise", mgr: "Wei Chen", sales: 1820000, sla: 2.5, status: "Prime" },
+      { hub: "Dallas South Fulfillment Center", terr: "US-South", channel: "Online B2B", mgr: "Elena Rostova", sales: 1650000, sla: 6.8, status: "SLA Alert" },
+      { hub: "Sydney Botany Logistics Center", terr: "APAC-ANZ", channel: "Direct Enterprise", mgr: "Damian Wright", sales: 1420000, sla: 3.0, status: "Normal" }
+    ];
+
+    const drillTransactions = [
+      { order: "ORD-10023", date: "2024-03-12", cust: "Nexus Industries", prod: "Optima Rackmount Server X800", qty: 2, price: 1276.00, disc: "12%", net: 2245.76, margin: -345.80, status: "Paid in Full", audit: "Negative Margin" },
+      { order: "ORD-10045", date: "2024-03-18", cust: "Summit Logistics Global", prod: "Apex ProWorkstation Z-90", qty: 3, price: 1323.00, disc: "30%", net: 2778.30, margin: 478.30, status: "Paid in Full", audit: "Discount Leakage" },
+      { order: "ORD-10091", date: "2024-04-02", cust: "Pinnacle Capital Group", prod: "EdgeCompute Blade Server B40", qty: 4, price: 1650.00, disc: "5%", net: 6270.00, margin: 2350.00, status: "Paid in Full", audit: "SLA Delay" },
+      { order: "ORD-10115", date: "2024-04-14", cust: "Cascade Dynamics", prod: "CoreFlow 48-Port Managed Switch", qty: 8, price: 750.00, disc: "8%", net: 5520.00, margin: 2160.00, status: "Disputed Settlement", audit: "Disputed Receivable" },
+      { order: "ORD-10128", date: "2024-04-22", cust: "Vanguard Systems", prod: "UltraSharp 32-inch 4K Monitor", qty: 12, price: 520.00, disc: "0%", net: 6240.00, margin: 2760.00, status: "Paid in Full", audit: "None - Compliant" },
+      { order: "ORD-10144", date: "2024-05-01", cust: "Horizon Ventures", prod: "ErgoMatrix Mesh Task Chair Pro", qty: 15, price: 420.00, disc: "10%", net: 5670.00, margin: 2820.00, status: "Paid in Full", audit: "None - Compliant" },
+      { order: "ORD-10168", date: "2024-05-11", cust: "Beacon Technologies", prod: "Modular Executive Table", qty: 2, price: 820.00, disc: "22%", net: 1279.20, margin: -180.80, status: "Net 30 Pending", audit: "Negative Margin" }
+    ];
+
+    // Populate Tables
+    function renderTables() {
+      // Sales Rep Table
+      const repTbody = document.getElementById('salesRepTableBody');
+      repTbody.innerHTML = salesRepsData.map(r => `
+        <tr class="hover:bg-slate-50">
+          <td class="py-2.5 px-3 font-medium text-slate-900">${r.name}</td>
+          <td class="py-2.5 px-3 text-right">${r.orders}</td>
+          <td class="py-2.5 px-3 text-right font-medium">$${r.revenue.toLocaleString()}</td>
+          <td class="py-2.5 px-3 text-right">${r.marginPct}%</td>
+          <td class="py-2.5 px-3 text-center">
+            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${r.tier.includes('Watchlist') ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}">${r.tier}</span>
+          </td>
+        </tr>
+      `).join('');
+
+      // Audit Exception Table
+      const auditTbody = document.getElementById('auditTableBody');
+      auditTbody.innerHTML = auditLogsData.map(a => `
+        <tr class="hover:bg-slate-50">
+          <td class="py-2.5 px-3 font-mono font-medium text-blue-600">${a.id}</td>
+          <td class="py-2.5 px-3 font-mono text-slate-700">${a.order}</td>
+          <td class="py-2.5 px-3 font-medium text-slate-900">${a.cat}</td>
+          <td class="py-2.5 px-3">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${a.sev === 'Critical' ? 'bg-red-100 text-red-700' : a.sev === 'High' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'}">${a.sev}</span>
+          </td>
+          <td class="py-2.5 px-3 text-right">$${a.rev.toLocaleString()}</td>
+          <td class="py-2.5 px-3 text-right font-bold text-red-600">$${a.exp.toLocaleString()}</td>
+          <td class="py-2.5 px-3 text-slate-600">${a.desc}</td>
+          <td class="py-2.5 px-3 text-center">
+            <button onclick="inspectOrder('${a.order}')" class="text-blue-600 hover:text-blue-800 font-semibold underline text-xs">Inspect</button>
+          </td>
+        </tr>
+      `).join('');
+
+      // Territory Table
+      const terrTbody = document.getElementById('territoryTableBody');
+      terrTbody.innerHTML = territoryData.map(t => `
+        <tr class="hover:bg-slate-50">
+          <td class="py-2.5 px-3 font-medium text-slate-900">${t.hub}</td>
+          <td class="py-2.5 px-3 font-mono text-slate-500">${t.terr}</td>
+          <td class="py-2.5 px-3 text-slate-600">${t.channel}</td>
+          <td class="py-2.5 px-3 text-slate-700">${t.mgr}</td>
+          <td class="py-2.5 px-3 text-right font-medium">$${t.sales.toLocaleString()}</td>
+          <td class="py-2.5 px-3 text-center font-bold ${t.sla > 5.0 ? 'text-red-600' : 'text-slate-700'}">${t.sla}%</td>
+          <td class="py-2.5 px-3 text-center">
+            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${t.status === 'SLA Alert' ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}">${t.status}</span>
+          </td>
+        </tr>
+      `).join('');
+
+      // Drill Table
+      renderDrillTable(drillTransactions);
+    }
+
+    function renderDrillTable(data) {
+      const drillTbody = document.getElementById('drillTableBody');
+      drillTbody.innerHTML = data.map(d => `
+        <tr class="hover:bg-slate-50 cursor-pointer" onclick="inspectOrder('${d.order}')">
+          <td class="py-2 px-3 font-mono font-medium text-blue-600">${d.order}</td>
+          <td class="py-2 px-3 text-slate-500">${d.date}</td>
+          <td class="py-2 px-3 font-medium text-slate-800">${d.cust}</td>
+          <td class="py-2 px-3 text-slate-600">${d.prod}</td>
+          <td class="py-2 px-3 text-right">${d.qty}</td>
+          <td class="py-2 px-3 text-right">$${d.price.toFixed(2)}</td>
+          <td class="py-2 px-3 text-right text-slate-500">${d.disc}</td>
+          <td class="py-2 px-3 text-right font-medium">$${d.net.toLocaleString()}</td>
+          <td class="py-2 px-3 text-right font-bold ${d.margin < 0 ? 'text-red-600' : 'text-emerald-600'}">$${d.margin.toLocaleString()}</td>
+          <td class="py-2 px-3 text-center">
+            <span class="px-2 py-0.5 rounded text-[10px] ${d.status === 'Disputed Settlement' ? 'bg-amber-100 text-amber-700 font-bold' : 'bg-slate-100 text-slate-600'}">${d.status}</span>
+          </td>
+          <td class="py-2 px-3 text-center">
+            <span class="px-2 py-0.5 rounded text-[10px] font-medium ${d.audit.includes('Negative') ? 'bg-red-100 text-red-700' : d.audit.includes('Leakage') ? 'bg-orange-100 text-orange-700' : 'bg-emerald-100 text-emerald-700'}">${d.audit}</span>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function filterDrillTable() {
+      const q = document.getElementById('drillSearch').value.toLowerCase();
+      const filtered = drillTransactions.filter(d => 
+        d.order.toLowerCase().includes(q) ||
+        d.cust.toLowerCase().includes(q) ||
+        d.prod.toLowerCase().includes(q)
+      );
+      renderDrillTable(filtered);
+    }
+
+    // Modal inspection
+    function inspectOrder(orderId) {
+      const item = drillTransactions.find(d => d.order === orderId) || {
+        order: orderId, date: "2024-03-12", cust: "Nexus Industries", prod: "Optima Rackmount Server X800",
+        qty: 2, price: 1276.00, disc: "12%", net: 2245.76, margin: -345.80, status: "Paid in Full", audit: "Negative Margin Override"
+      };
+
+      document.getElementById('modalOrderId').innerText = `Audit Deep Dive: ${item.order}`;
+      document.getElementById('modalContent').innerHTML = `
+        <div class="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-lg border">
+          <div><span class="text-slate-400">Order Date:</span> <strong class="text-slate-800">${item.date}</strong></div>
+          <div><span class="text-slate-400">Customer Account:</span> <strong class="text-slate-800">${item.cust}</strong></div>
+          <div><span class="text-slate-400">Product SKU:</span> <strong class="text-slate-800">${item.prod}</strong></div>
+          <div><span class="text-slate-400">Settlement State:</span> <strong class="text-slate-800">${item.status}</strong></div>
+        </div>
+        <div class="space-y-1.5 pt-2">
+          <div class="flex justify-between border-b pb-1"><span>Standard Unit MSRP:</span> <span>$1,450.00</span></div>
+          <div class="flex justify-between border-b pb-1"><span>Executed Selling Price:</span> <span class="font-semibold text-slate-800">$${item.price.toFixed(2)}</span></div>
+          <div class="flex justify-between border-b pb-1"><span>Applied Commercial Discount:</span> <span class="text-amber-600 font-bold">${item.disc}</span></div>
+          <div class="flex justify-between border-b pb-1"><span>Realized Net Revenue:</span> <span class="font-bold text-slate-900">$${item.net.toLocaleString()}</span></div>
+          <div class="flex justify-between border-b pb-1"><span>Realized Gross Margin:</span> <span class="font-bold ${item.margin < 0 ? 'text-red-600' : 'text-emerald-600'}">$${item.margin.toLocaleString()}</span></div>
+          <div class="flex justify-between pt-1"><span>Assurance Compliance Tag:</span> <span class="font-semibold text-red-600">${item.audit}</span></div>
+        </div>
+      `;
+      document.getElementById('orderModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('orderModal').classList.add('hidden');
+    }
+
+    // Initialize Charts
+    function initCharts() {
+      // 1. Revenue Velocity vs 3M Rolling Average
+      const ctxRev = document.getElementById('chartRevenueTrend').getContext('2d');
+      chartRevTrend = new Chart(ctxRev, {
+        type: 'bar',
+        data: {
+          labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+          datasets: [
+            {
+              type: 'line',
+              label: '3M Rolling Avg ($)',
+              data: [680000, 710000, 750000, 810000, 830000, 890000, 940000, 960000, 1020000, 1150000, 1280000, 1340000],
+              borderColor: '#0284c7',
+              backgroundColor: 'transparent',
+              borderWidth: 2.5,
+              tension: 0.35,
+              pointRadius: 3
+            },
+            {
+              type: 'bar',
+              label: 'Net Revenue ($)',
+              data: [690000, 720000, 840000, 870000, 780000, 1020000, 1010000, 890000, 1160000, 1380000, 1320000, 1420000],
+              backgroundColor: '#1e3a8a',
+              borderRadius: 4
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } } },
+          scales: {
+            y: { ticks: { callback: v => '$' + (v / 1000) + 'k', font: { size: 10 } }, grid: { color: '#f1f5f9' } },
+            x: { ticks: { font: { size: 10 } }, grid: { display: false } }
+          }
+        }
+      });
+
+      // 2. Category Share (Donut)
+      const ctxCat = document.getElementById('chartCategoryShare').getContext('2d');
+      chartCategory = new Chart(ctxCat, {
+        type: 'doughnut',
+        data: {
+          labels: ['Technology', 'Industrial & Safety', 'Furniture', 'Office Supplies'],
+          datasets: [{
+            data: [42, 24, 19, 15],
+            backgroundColor: ['#1e3a8a', '#0284c7', '#0d9488', '#f59e0b']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } }
+        }
+      });
+
+      // 3. Regional Bar
+      const ctxReg = document.getElementById('chartRegionalBar').getContext('2d');
+      chartRegional = new Chart(ctxReg, {
+        type: 'bar',
+        data: {
+          labels: ['North America', 'Europe', 'Asia-Pacific'],
+          datasets: [
+            { label: 'FY 2024 Revenue ($)', data: [5840000, 3120000, 2460000], backgroundColor: '#1e3a8a', borderRadius: 4 },
+            { label: 'FY 2023 Revenue ($)', data: [4920000, 2650000, 2040000], backgroundColor: '#94a3b8', borderRadius: 4 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: { size: 10 } } } },
+          scales: {
+            y: { ticks: { callback: v => '$' + (v / 1000000) + 'M', font: { size: 10 } }, grid: { color: '#f1f5f9' } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+
+      // 4. Waterfall Chart (Gross to Net Realized Profit)
+      const ctxWater = document.getElementById('chartWaterfall').getContext('2d');
+      chartWaterfall = new Chart(ctxWater, {
+        type: 'bar',
+        data: {
+          labels: ['Gross Sales', 'Discounts', 'Net Revenue', 'COGS', 'Gross Margin'],
+          datasets: [{
+            label: 'Amount ($M)',
+            data: [20.12, -1.67, 18.45, -10.61, 7.84],
+            backgroundColor: ['#1e3a8a', '#ef4444', '#0284c7', '#f97316', '#10b981'],
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { ticks: { callback: v => '$' + v + 'M', font: { size: 10 } }, grid: { color: '#f1f5f9' } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+
+      // 5. Discount Buckets
+      const ctxDisc = document.getElementById('chartDiscountBuckets').getContext('2d');
+      chartDiscount = new Chart(ctxDisc, {
+        type: 'bar',
+        data: {
+          labels: ['0% Standard', '1 - 10% Low', '11 - 20% Moderate', '21 - 24% Watchlist', '>= 25% Rogue Breach'],
+          datasets: [{
+            label: 'Order Volume',
+            data: [1340, 1120, 890, 290, 160],
+            backgroundColor: ['#10b981', '#0284c7', '#f59e0b', '#f97316', '#dc2626'],
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { grid: { color: '#f1f5f9' } },
+            x: { grid: { display: false }, ticks: { font: { size: 9 } } }
+          }
+        }
+      });
+
+      // 6. Segment Donut
+      const ctxSeg = document.getElementById('chartSegmentDonut').getContext('2d');
+      chartSegment = new Chart(ctxSeg, {
+        type: 'doughnut',
+        data: {
+          labels: ['Enterprise', 'Mid-Market', 'SMB', 'Consumer'],
+          datasets: [{
+            data: [48, 26, 18, 8],
+            backgroundColor: ['#1e3a8a', '#0284c7', '#38bdf8', '#94a3b8']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } }
+        }
+      });
+
+      // 7. Credit Risk Matrix Bar
+      const ctxCredit = document.getElementById('chartCreditRisk').getContext('2d');
+      chartCredit = new Chart(ctxCredit, {
+        type: 'bar',
+        data: {
+          labels: ['AAA (Prime)', 'AA (High Grade)', 'A (Upper Medium)', 'BBB (Lower Medium)', 'BB (Subprime)'],
+          datasets: [
+            { label: 'Settled Net Revenue ($)', data: [5200000, 4800000, 4100000, 2800000, 1210000], backgroundColor: '#1e3a8a', borderRadius: 4 },
+            { label: 'Disputed Receivables ($)', data: [12000, 18000, 42000, 142000, 128180], backgroundColor: '#dc2626', borderRadius: 4 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: { size: 10 } } } },
+          scales: {
+            y: { ticks: { callback: v => '$' + (v / 1000000) + 'M', font: { size: 10 } }, grid: { color: '#f1f5f9' } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    // Dynamic Filter handler
+    function applyFilters() {
+      const yr = document.getElementById('filterYear').value;
+      const reg = document.getElementById('filterRegion').value;
+      document.getElementById('activeFilterLabel').innerText = `Active Scope: ${reg === 'ALL' ? 'All Regions' : reg} | Year: ${yr === 'ALL' ? '2023 - 2024' : yr} | Dynamic Slicer Active`;
+
+      // Update KPI displays dynamically
+      if (yr === '2024') {
+        document.getElementById('kpi-net-revenue').innerText = "$11,420,000";
+        document.getElementById('kpi-gross-margin').innerText = "$4,850,200";
+        document.getElementById('kpi-target-pct').innerText = "106.8%";
+      } else if (yr === '2023') {
+        document.getElementById('kpi-net-revenue').innerText = "$7,032,190";
+        document.getElementById('kpi-gross-margin').innerText = "$2,992,340";
+        document.getElementById('kpi-target-pct').innerText = "99.4%";
+      } else {
+        document.getElementById('kpi-net-revenue').innerText = "$18,452,190";
+        document.getElementById('kpi-gross-margin').innerText = "$7,842,540";
+        document.getElementById('kpi-target-pct').innerText = "104.2%";
+      }
+    }
+
+    function resetFilters() {
+      document.getElementById('filterYear').value = "ALL";
+      document.getElementById('filterRegion').value = "ALL";
+      applyFilters();
+    }
+
+    // Initial load
+    window.addEventListener('DOMContentLoaded', () => {
+      renderTables();
+      initCharts();
+    });
+  </script>
+</body>
+</html>
